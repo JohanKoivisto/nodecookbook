@@ -62,10 +62,11 @@ const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
 const dataObj = JSON.parse(data);
 
 const server = http.createServer((req, res) => {
-  const pathName = req.url;
+
+  const {query, pathname} = url.parse(req.url, true) //url.parse returns object with properties called query and pathname so we assign those to variables with same name.
 
   // Overview page
-  if (pathName === "/" || pathName === "/overview") {
+  if (pathname === "/" || pathname === "/overview") {
     res.writeHead(200, { "Content-type": "text/html" }); // nees to specify content type
 
     const cardsHtml = dataObj.map((el) => replaceTemplate(tempCard, el)).join(""); // call function we made and replace stuff inside template with data from json after conversion to single string
@@ -74,11 +75,15 @@ const server = http.createServer((req, res) => {
     return res.end(output);
 
     // Product page
-  } else if (pathName === "/product") {
-    return res.end("This is the product");
+  } else if (pathname === "/product") {
+    res.writeHead(200, { "Content-type": "text/html" });
+    const product = dataObj[query.id];
+    const output = replaceTemplate(tempProduct, product)
+
+    return res.end(output);
 
     // API
-  } else if (pathName === "/api") {
+  } else if (pathname === "/api") {
     res.writeHead(200, { "Content-type": "application/json" });
     res.end(data);
   }
